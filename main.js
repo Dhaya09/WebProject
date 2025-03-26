@@ -1,75 +1,108 @@
 const signUpButton = document.getElementById('signUp');
 const signInButton = document.getElementById('signIn');
 const container = document.getElementById('container');
+const generateOtpButton = document.getElementById('generateOtpButton');
+const signUpSubmitButton = document.getElementById('signUpButton');
+const otpField = document.getElementById('otpField');
 
-signUpButton.addEventListener('click', () =>
-    container.classList.add('right-panel-active'));
+signUpButton.addEventListener('click', () => {
+    container.classList.add('right-panel-active');
+});
 
-signInButton.addEventListener('click', () =>
-    container.classList.remove('right-panel-active'));
+signInButton.addEventListener('click', () => {
+    container.classList.remove('right-panel-active');
+});
 
+// Handle Generate OTP Button
+generateOtpButton.addEventListener('click', async () => {
+    const email = document.querySelector('#signupEmail').value;
 
+    try {
+        const response = await fetch('/send-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await response.json();
+        alert(data.message);
 
-document.addEventListener("DOMContentLoaded", function () {
-    // Handle Sign-Up Form Submission
-    document.querySelector(".sign-up-container form").addEventListener("submit", async function (event) {
-        event.preventDefault();
+        // Enable OTP field for input after OTP is sent
+        otpField.disabled = false;
+    } catch (err) {
+        alert("Error sending OTP. Please try again.");
+    }
+});
 
-        const name = this.querySelector('input[type="text"]').value.trim();
-        const email = this.querySelector('input[type="email"]').value.trim();
-        const password = this.querySelector('input[type="password"]').value.trim();
-        const confirmPassword = this.querySelector('input[name="confirmPassword"]').value.trim();
+// Verify OTP on input change
+otpField.addEventListener('input', async () => {
+    const email = document.querySelector('#signupEmail').value;
+    const otp = otpField.value;
 
-        if (password !== confirmPassword) {
-            alert("Passwords do not match.");
-            return;
-        }
-
+    if (otp.length === 6) { // Assuming 6-digit OTP
         try {
-            const response = await fetch("http://localhost:5000/signup", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, password })
+            const response = await fetch('/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp })
             });
-
             const data = await response.json();
-            if (response.ok) {
-                alert("Signup successful! Redirecting...");
-                window.location.href = data.redirect;
+
+            if (data.message === "OTP verified successfully") {
+                generateOtpButton.style.display = 'none'; // Hide Generate OTP button
+                signUpSubmitButton.style.display = 'block'; // Show Sign Up button
+                otpField.disabled = true; // Disable OTP field after verification
             } else {
                 alert(data.message);
             }
-        } catch (error) {
-            console.error("Error during signup:", error);
-            alert("Signup failed. Please try again.");
+        } catch (err) {
+            alert("Error verifying OTP. Please try again.");
         }
-    });
+    }
+});
 
-    // Handle Sign-In Form Submission
-    document.querySelector(".sign-in-container form").addEventListener("submit", async function (event) {
-        event.preventDefault();
+// Handle Signup Form Submission
+document.querySelector('.sign-up-container form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.querySelector('.sign-up-container input[type="text"]').value;
+    const email = document.querySelector('.sign-up-container input[type="email"]').value;
+    const password = document.querySelector('.sign-up-container input[type="password"]').value;
 
-        const email = this.querySelector('input[type="email"]').value.trim();
-        const password = this.querySelector('input[type="password"]').value.trim();
-
-        try {
-            const response = await fetch("http://localhost:5000/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                alert("Login successful! Redirecting...");
-                localStorage.setItem("token", data.token);
-                window.location.href = data.redirect;
-            } else {
-                alert(data.message);
-            }
-        } catch (error) {
-            console.error("Error during login:", error);
-            alert("Login failed. Please try again.");
+    try {
+        const response = await fetch('/signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+        });
+        const data = await response.json();
+        if (data.redirect) {
+            window.location.href = data.redirect;
+        } else {
+            alert(data.message);
         }
-    });
+    } catch (err) {
+        alert("Error during signup. Please try again.");
+    }
+});
+
+// Handle Login Form Submission (unchanged)
+document.querySelector('.sign-in-container form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.querySelector('.sign-in-container input[type="email"]').value;
+    const password = document.querySelector('.sign-in-container input[type="password"]').value;
+
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (data.redirect) {
+            window.location.href = data.redirect;
+        } else {
+            alert(data.message);
+        }
+    } catch (err) {
+        alert("Error during login. Please try again.");
+    }
 });
