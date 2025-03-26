@@ -5,6 +5,16 @@ const generateOtpButton = document.getElementById('generateOtpButton');
 const signUpSubmitButton = document.getElementById('signUpButton');
 const otpField = document.getElementById('otpField');
 
+container.style.display = 'none';
+
+// Event listener for the login link
+loginLink.addEventListener('click', (event) => {
+    event.preventDefault(); // Prevent default anchor click behavior
+    container.style.display = 'block'; // Show the container
+    document.querySelector('.sign-in-container').style.display = 'block'; // Show sign-in container
+    document.querySelector('.sign-up-container').style.display = 'block'; // Hide sign-up container
+});
+
 signUpButton.addEventListener('click', () => {
     container.classList.add('right-panel-active');
 });

@@ -84,6 +84,22 @@ body {
     font-size: 18px;
     font-weight: bold;
     padding: 10px;
+    position: relative;
+}
+.nav-links a::after {
+    content: ''; /* Create an empty content for the pseudo-element */
+    position: absolute; /* Position it absolutely */
+    left: 0; /* Align to the left */
+    bottom: 0; /* Align to the bottom */
+    height: 2px; /* Height of the underline */
+    width: 100%; /* Full width */
+    background-color: white; /* Color of the underline */
+    transform: scaleX(0); /* Start with no width */
+    transition: transform 0.3s ease; /* Smooth transition for the scaling */
+}
+
+.nav-links a:hover::after {
+    transform: scaleX(1); /* Scale to full width on hover */
 }
 
 h1 {
