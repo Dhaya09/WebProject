@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Existing styles unchanged */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 60px;
+            height: 100%;
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+        }
+
+        .sidebar h2 {
+            display: none;
+        }
+
+        .dashboard-sections {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .dashboard-sections li {
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .dashboard-item {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+        }
+
+        .dashboard-item:hover {
+            color: #b1c5cf;
+        }
+
+        .tooltip {
+            visibility: hidden;
+            background-color: #555;
+            color: #fff;
+            text-align: left;
+            border-radius: 5px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            left: 70px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+
+        .dashboard-sections li:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .content {
+            margin-left: 50px;
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-section {
+            height: 15%;
+            background-color: white;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid white;
+        }
+
+        .main-section {
+            display: flex;
+            flex-grow: 1;
+            padding: 10px;
+        }
+
+        .left-section {
+            flex: 1;
+            background-color: #eaeaea;
+            padding: 10px;
+            margin-right: 10px;
+        }
+
+        .right-section {
+            flex: 1;
+            background-color: #eaeaea;
+            padding: 10px;
+        }
+
+        #page-content {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <ul class="dashboard-sections">
+                <li><a href="#" class="dashboard-item" onclick="loadPage('homein.html'); return false;"><i
+                            class="fas fa-home"></i><span class="tooltip">Home</span></a></li>
+                <li><a href="#" class="dashboard-item" onclick="loadPage('profile.html'); return false;"><i
+                            class="fas fa-user"></i><span class="tooltip">Profile Management</span></a></li>
+                <li><a href="#" class="dashboard-item" onclick="loadPage('notes.html'); return false;"><i
+                            class="fas fa-file-upload"></i><span class="tooltip">Notes Upload</span></a></li>
+                <li><a href="#" class="dashboard-item" onclick="loadPage('todolist.html'); return false;"><i
+                            class="fas fa-tasks"></i><span class="tooltip">To-Do List</span></a></li>
+                <li><a href="#" class="dashboard-item" onclick="loadPage('assignments.html'); return false;"><i
+                            class="fas fa-bell"></i><span class="tooltip">Assignment Reminder</span></a></li>
+                <li><a href="#" class="dashboard-item" onclick="loadPage('pomodoro.html'); return false;"><i
+                            class="fas fa-clock"></i><span class="tooltip">Pomodoro Timer</span></a></li>
+                <li><a href="#" class="dashboard-item" onclick="logout(); return false;"><i
+                            class="fas fa-sign-out-alt"></i><span class="tooltip">Logout</span></a></li>
+            </ul>
+        </nav>
+        <div class="content">
+            <div class="top-section">
+                <h3>Welcome To the Dashboard</h3>
+            </div>
+            <div class="main-section">
+                <div class="left-section">
+                    <p>Important msgs, mails, news, alerts come here.</p>
+                </div>
+                <div class="right-section">
+                    <p>Recently performed activities and dues.</p>
+                </div>
+            </div>
+            <div id="page-content">
+                <p>Select an option from the sidebar to load content here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function checkSession() {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                window.location.href = "login.html";
+                return false;
+            }
+
+            try {
+                const response = await fetch("http://localhost:5000/check-session", {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include"
+                });
+                const data = await response.json();
+                if (data.message !== "Session valid") {
+                    localStorage.removeItem("token");
+                    window.location.href = "login.html";
+                    return false;
+                }
+                return true;
+            } catch (err) {
+                console.error("Session check error:", err);
+                localStorage.removeItem("token");
+                window.location.href = "login.html";
+                return false;
+            }
+        }
+
+        async function loadPage(page) {
+            const isValid = await checkSession();
+            if (!isValid) return;
+
+            const token = localStorage.getItem("token");
+            const contentDiv = document.querySelector(".content");
+
+            fetch(page, {
+                headers: { "Authorization": `Bearer ${token}` },
+                credentials: "include"
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`);
+                    return response.text();
+                })
+                .then(data => {
+                    contentDiv.innerHTML = data;
+
+                    const styleLinks = contentDiv.querySelectorAll('link[rel="stylesheet"]');
+                    styleLinks.forEach(link => {
+                        const newLink = document.createElement('link');
+                        newLink.rel = 'stylesheet';
+                        newLink.href = link.href;
+                        document.head.appendChild(newLink);
+                    });
+
+                    const scriptTags = contentDiv.querySelectorAll('script');
+                    scriptTags.forEach(script => {
+                        const newScript = document.createElement('script');
+                        if (script.src) {
+                            newScript.src = script.src;
+                        } else {
+                            newScript.textContent = script.innerHTML;
+                        }
+                        newScript.onload = () => console.log(`Script from ${page} loaded`);
+                        document.body.appendChild(newScript);
+                        if (!script.src && script.innerHTML) {
+                            try {
+                                eval(script.innerHTML);
+                            } catch (e) {
+                                console.error(`Error executing script in ${page}:`, e);
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error(`Error loading ${page}:`, error);
+                    contentDiv.innerHTML = `<p>Error loading content: ${error.message}</p>`;
+                });
+        }
+
+        function logout() {
+            fetch("http://localhost:5000/logout", {
+                method: "POST",
+                credentials: "include"
+            })
+                .then(response => response.json())
+                .then(data => {
+                    localStorage.removeItem("token");
+                    window.location.href = data.redirect || "login.html";
+                })
+                .catch(err => {
+                    console.error("Logout error:", err);
+                    localStorage.removeItem("token");
+                    window.location.href = "login.html";
+                });
+        }
+
+        window.onload = async () => {
+            const isValid = await checkSession();
+            if (isValid) loadPage('homein.html');
+        };
+    </script>
+</body>
+
+</html>

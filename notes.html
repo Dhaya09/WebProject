@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Notes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .notes-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            /*margin-left: 100px;
+            margin-top: 20px;*/
+            margin: auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 60%;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #b1c5cf;
+        }
+
+        #uploadStatus {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        #uploadMessage {
+            display: block;
+            margin-top: 10px;
+            color: #333;
+        }
+
+        #loadingSpinner {
+            display: none;
+            margin-right: 10px;
+        }
+
+        #loadingSpinner i {
+            color: #007bff;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        h2 {
+            margin-top: 20px;
+            color: #333;
+        }
+
+        #fileList {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        #fileList li {
+            background-color: #eaeaea;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="notes-container">
+        <h1>Upload Your Notes</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file" accept=".pdf,.doc,.docx,.txt" required>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="uploadStatus">
+            <span id="loadingSpinner"><i class="fas fa-spinner"></i></span>
+            <span id="uploadMessage"></span>
+        </div>
+        <h2>Uploaded Files</h2>
+        <ul id="fileList"></ul>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token");
+        if (!token) {
+            alert("Please log in to upload files.");
+            window.location.href = "login.html";
+        }
+
+        const uploadForm = document.getElementById("uploadForm");
+        const fileList = document.getElementById("fileList");
+        const uploadMessage = document.getElementById("uploadMessage");
+        const loadingSpinner = document.getElementById("loadingSpinner");
+
+        // Handle file upload with onsubmit (no AJAX)
+        uploadForm.onsubmit = function (e) {
+            e.preventDefault(); // Prevent default form submission
+            console.log("Form submitted");
+
+            const fileInput = document.getElementById("fileInput");
+            const file = fileInput.files[0];
+            if (!file) {
+                uploadMessage.innerText = "Please select a file.";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            loadingSpinner.style.display = "inline"; // Show spinner
+            uploadMessage.innerText = "Uploading file... Please wait.";
+
+            fetch("/upload", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    console.log("Response received:", response);
+                    if (!response.ok) {
+                        throw new Error("Upload failed with status: " + response.status);
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    uploadMessage.innerText = "Uploaded successfully";
+                    loadFiles(); // Refresh file list
+                    uploadForm.reset(); // Clear form
+                    console.log("Upload successful:", result.filename);
+                })
+                .catch(err => {
+                    console.error("Upload error:", err);
+                    uploadMessage.innerText = "Upload failed";
+                })
+                .finally(() => {
+                    loadingSpinner.style.display = "none"; // Hide spinner
+                });
+        };
+
+        // Function to load uploaded files
+        function loadFiles() {
+            fetch("/files", {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch files");
+                    }
+                    return response.json();
+                })
+                .then(files => {
+                    fileList.innerHTML = ""; // Clear list
+                    files.forEach(file => {
+                        const li = document.createElement("li");
+                        const link = document.createElement("a");
+                        link.href = `/uploads/${file}`;
+                        link.textContent = file;
+                        link.target = "_blank";
+                        li.appendChild(link);
+                        fileList.prepend(li); // Add new files at the top
+                    });
+                })
+                .catch(err => {
+                    console.error("Error loading files:", err);
+                    fileList.innerHTML = "<li>Error loading files</li>";
+                });
+        }
+
+        // Initial load
+        loadFiles();
+    </script>
+</body>
+
+</html>
