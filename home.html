@@ -5,7 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Student Bubble - Empowering Student Success</title>
-  <!-- Bootstrap CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <style>
     * {
@@ -295,18 +294,14 @@
 
     <div class="testimonials">
       <h3>What Our Users Say</h3>
-      <div class="testimonial">"Student Bubble has transformed my academic life! I can manage everything in one place."
-        - Alex R.</div>
-      <div class="testimonial">"The features are incredibly helpful, especially the time management tools!" - Jamie L.
-      </div>
-      <div class="testimonial">"I love the collaborative features! It makes group projects so much easier." - Sam T.
-      </div>
+      <div class="testimonial">"Student Bubble has transformed my academic life! I can manage everything in one place." - Alex R.</div>
+      <div class="testimonial">"The features are incredibly helpful, especially the time management tools!" - Jamie L.</div>
+      <div class="testimonial">"I love the collaborative features! It makes group projects so much easier." - Sam T.</div>
     </div>
 
     <div class="blog">
       <h3>Latest Blog Posts</h3>
-      <p>Check out our latest articles on study tips, productivity hacks, and student life advice to help you succeed.
-      </p>
+      <p>Check out our latest articles on study tips, productivity hacks, and student life advice to help you succeed.</p>
       <p><strong>1. How to Balance Study and Social Life</strong></p>
       <p>Learn effective strategies to manage your time and enjoy your college experience.</p>
       <p><strong>2. Top 10 Study Techniques for Success</strong></p>
@@ -324,22 +319,18 @@
       </a>
     </div>
 
-    <div class="contact">
+    <div class="contact" id="contactSection">
       <h3>Contact Us</h3>
-      <p>If you have any questions or need assistance, feel free to reach out:</p>
-      <p>Email: studentbubble00@gmail.com</p>
-      <p>Phone: 91+ 86102 04905 </p>
+      <p id="emailField"></p>
+      <p id="phoneField"></p>
     </div>
 
-    <!-- Footer with Bootstrap -->
     <footer class="bg-light text-center text-lg-start mt-4">
       <div class="container p-4">
         <div class="row">
           <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
             <h5 class="text-uppercase">Student Bubble</h5>
-            <p>
-              Your all-in-one smart portal designed to make student life organized, productive, and stress-free.
-            </p>
+            <p>Your all-in-one smart portal designed to make student life organized, productive, and stress-free.</p>
           </div>
           <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
             <h5 class="text-uppercase">Links</h5>
@@ -360,13 +351,21 @@
         </div>
       </div>
       <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
-        © 2025 Student Bubble | Built with <i class="fab fa-html5"></i> HTML, <i class="fab fa-css3-alt"></i> CSS, <i
-          class="fab fa-js"></i> JavaScript, <i class="fab fa-node-js"></i> Node.js/Python, <i
-          class="fas fa-database"></i> MongoDB/PostgreSQL
+        © 2025 Student Bubble | Built with <i class="fab fa-html5"></i> HTML, <i class="fab fa-css3-alt"></i> CSS, <i class="fab fa-js"></i> JavaScript, <i class="fab fa-node-js"></i> Node.js/Python, <i class="fas fa-database"></i> MongoDB/PostgreSQL
       </div>
     </footer>
 
-    <!-- Bootstrap JS and dependencies -->
+    <script>
+      const contactData = {
+        email: "studentbubble00@gmail.com",
+        phone: "+91 86102 04905"
+      };
+      const jsonData = JSON.stringify(contactData);
+      const parsedData = JSON.parse(jsonData);
+      document.getElementById("emailField").innerText = "Email: " + parsedData.email;
+      document.getElementById("phoneField").innerText = "Phone: " + parsedData.phone;
+    </script>
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
